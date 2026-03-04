@@ -1,9 +1,9 @@
-from django.contrib.auth.models import User
+from django.db.models import Prefetch
 from rest_framework import serializers, permissions, parsers, generics
 from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.filters import SearchFilter
 
-from apps.user.permissions import IsAdmin
-from .permissions import IsOwner
 from .models import Product, ProductImage
 from .serializers import (
     CreateUpdateSerializer,
@@ -12,7 +12,9 @@ from .serializers import (
 
 
 class ListCreateView(generics.ListCreateAPIView):
-	queryset = Product.objects.all()
+	queryset = Product.objects.prefetch_related(Prefetch("product_images"))
+	filter_backends = [SearchFilter]
+	search_fields = ["name", "description"]
 	parser_classes = [parsers.MultiPartParser, parsers.JSONParser]
 	
 	def get_permissions(self):
@@ -26,22 +28,15 @@ class ListCreateView(generics.ListCreateAPIView):
 		return ResponseSerializer
 	
 	def create(self, request):
-		images = request.FILES.getlist("images")
-		if len(images) < 2:
-			raise serializers.ValidationError({"images": "images must be more than 2"})
-		
 		serializer = self.get_serializer(data=request.data)
 		serializer.is_valid(raise_exception=True)
 		product = serializer.save(user=request.user)
 		
-		for image in images:
-			ProductImage.objects.create(product=product, image=image)
-		
-		return Response(ResponseSerializer(product).data)
+		return Response(ResponseSerializer(product, context=self.get_serializer_context()).data, status=201)
 
 
 class RetrieveUpdateView(generics.RetrieveUpdateAPIView):
-	queryset = Product.objects.all()
+	queryset = Product.objects.prefetch_related(Prefetch("product_images"))
 	parser_classes = [parsers.MultiPartParser, parsers.JSONParser]
 	
 	def get_permissions(self):
@@ -55,13 +50,14 @@ class RetrieveUpdateView(generics.RetrieveUpdateAPIView):
 		return ResponseSerializer
 	
 	def update(self, request, *args, **kwargs):
+		partial = kwargs.pop("partial", False)
 		instance = self.get_object()
 		if instance.user != request.user:
-			raise serializers.ValidationError({"error": "permission denied"})
-		
-		serializer = self.get_serializer(instance, data=request.data)
+			raise PermissionDenied("You do not have permission to edit this product.")
+				
+		serializer = self.get_serializer(instance, data=request.data, partial=partial)
 		serializer.is_valid(raise_exception=True)
 		product = serializer.save()
-		return Response(ResponseSerializer(product).data)
+		return Response(ResponseSerializer(product, context=self.get_serializer_context()).data)
 	
 

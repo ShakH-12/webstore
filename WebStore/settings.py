@@ -119,7 +119,8 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.AnonRateThrottle"
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "anon": "10/minute"
+        "anon": "10/minute",
+        "user": "100/minute"
     },
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer"
@@ -129,7 +130,9 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication"
-    ]
+    ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 3
 }
 
 SIMPLE_JWT = {
@@ -188,6 +191,7 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 
+"""
 LOGGING = {
     "version": 1,
     "disable_existing_logger": False,
@@ -206,4 +210,4 @@ LOGGING = {
         }
     }
 }
-
+"""

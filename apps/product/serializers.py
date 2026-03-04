@@ -12,8 +12,17 @@ class CreateUpdateSerializer(serializers.ModelSerializer):
 		fields = ["user", "name", "description", "price"]
 		read_only_fields = ["user"]
 	
+	def validate(self, attrs):
+		images = self.context["request"].FILES.getlist("images")
+		if len(images) < 2:
+			raise serializers.ValidationError({"images": "At least 2 images are required."})
+		return attrs
+	
 	def create(self, validated_data):
+		images = self.context["request"].FILES.getlist("images")
 		product = Product.objects.create(**validated_data)
+		for image in images:
+			ProductImage.objects.create(product=product, image=image)
 		return product
 
 
@@ -24,7 +33,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 
 class ResponseSerializer(serializers.ModelSerializer):
-	product_images = ProductImageSerializer(many=True)
+	product_images = ProductImageSerializer(required=False, many=True)
 	class Meta:
 		model = Product
 		fields = "__all__"
