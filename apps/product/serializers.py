@@ -1,21 +1,24 @@
 from rest_framework import serializers
 from .models import Product, ProductImage
+from apps.category.models import Category
 
 
 class CreateUpdateSerializer(serializers.ModelSerializer):
 	name = serializers.CharField(min_length=10, max_length=255)
 	description = serializers.CharField(min_length=10, max_length=1000)
 	price = serializers.CharField()
+	category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
 	
 	class Meta:
 		model = Product
-		fields = ["user", "name", "description", "price"]
+		fields = ["user", "name", "description", "category", "price"]
 		read_only_fields = ["user"]
 	
 	def validate(self, attrs):
 		images = self.context["request"].FILES.getlist("images")
 		if len(images) < 2:
 			raise serializers.ValidationError({"images": "At least 2 images are required."})
+		
 		return attrs
 	
 	def create(self, validated_data):
@@ -34,8 +37,10 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 class ResponseSerializer(serializers.ModelSerializer):
 	product_images = ProductImageSerializer(required=False, many=True)
+	category = serializers.PrimaryKeyRelatedField(read_only=True)
 	class Meta:
 		model = Product
 		fields = "__all__"
+
 
 	

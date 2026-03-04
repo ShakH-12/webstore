@@ -13,7 +13,7 @@ class ListCreateView(generics.ListCreateAPIView):
 	def get_permissions(self):
 		if self.request.method == "POST":
 			return [IsAdmin()]
-		return permissions.AllowAny()
+		return [permissions.AllowAny()]
 
 
 class RetrieveUpdateView(generics.RetrieveUpdateAPIView):
@@ -23,4 +23,4 @@ class RetrieveUpdateView(generics.RetrieveUpdateAPIView):
 	def get_permissions(self):
 		if self.request.method in ["PUT", "PATCH"]:
 			return [IsAdmin()]
-		return permissions.AllowAny()
+		return [permissions.AllowAny()]

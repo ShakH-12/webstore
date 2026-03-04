@@ -20,7 +20,7 @@ class Category(models.Model):
 		indexes = [models.Index(fields=["name"])]
 	
 	def __str__(self):
-		return f"<Category(id={self.id}, name={self.namse:10]}...)>"
+		return f"<Category(id={self.id}, name={self.name[:10]}...)>"
 	
 	def save(self, *args, **kwargs):
 		self.full_clean()

@@ -1,11 +1,13 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.core.validators import (
     MinValueValidator,
     MinLengthValidator,
     MaxLengthValidator
 )
 from decimal import Decimal
+from apps.category.models import Category
 
 
 class Product(models.Model):
@@ -20,6 +22,7 @@ class Product(models.Model):
 	    decimal_places=2,
 	    validators=[MinValueValidator(Decimal("0.00"))]
 	)
+	category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="product_category")
 	is_active = models.BooleanField(default=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
