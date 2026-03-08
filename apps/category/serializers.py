@@ -10,7 +10,6 @@ class CategorySerializer(serializers.ModelSerializer):
 		read_only_fields = []
 	
 	def create(self, validated_data):
-		category = Category.objects.create(**validated_data)
-		return category
+		return Category.objects.create(**validated_data)
 
 
